@@ -1,14 +1,16 @@
 import User from "../models/user.model.js"
 import bcrypt from "bcryptjs"
 import genToken from "../utils/token.js"
-import {cookie} from 'cookie-parser'
+
 
 export const signUp = async(req,res)=>{
 
     try {
         const {fullName,email,password,role,mobile} = req.body
 
-        const user = await User.findOne({email})
+
+        let user = await User.findOne({email})
+        console.log(user)
 
         if(user) {
             return res.status(400).json({"message": "user already exists"})
@@ -35,7 +37,7 @@ export const signUp = async(req,res)=>{
         res.cookie("token",token,{
             secure:false,
             sameSite:"strict",
-            maxAge:"7* 24 * 60 * 60 * 1000",
+            maxAge:7* 24 * 60 * 60 * 1000,
             httpOnly:true
         })
 
@@ -72,7 +74,7 @@ export const signIn = async(req,res)=>{
         res.cookie("token",token,{
             secure:false,
             sameSite:"strict",
-            maxAge:"7* 24 * 60 * 60 * 1000",
+            maxAge:7* 24 * 60 * 60 * 1000,
             httpOnly:true
         })
 
@@ -86,15 +88,11 @@ export const signIn = async(req,res)=>{
 }
 
 
-export const signOut = async(req,res)=>{
+export const signOut = (req, res) => {
     try {
-        res.clearCookie("token")
-        return res.json(200).json({message:"log out successfully "})
-        
+        res.clearCookie("token");
+        return res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
-         return res.json(500).json({message:"signout error"})
-
-        
+        return res.status(500).json({ message: error.message });
     }
-
 }
