@@ -4,8 +4,15 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { serverUrl } from "../App.jsx";
+import toast from "react-hot-toast";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../../firebase.js";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice.js";
+
 
 const SignIn = () => {
+  const dispatch = useDispatch()
   const navigate = useNavigate();
 
   const primaryColor = "#ff4d2d";
@@ -41,23 +48,43 @@ const SignIn = () => {
         { withCredentials: true }
       );
 
-      console.log(response.data);
+       dispatch(setUserData(data))
 
       // Optional: Navigate after success
-      navigate("/dashboard");
+      // navigate("/dashboard");
 
       // Reset form
       setFormData({
         email: "",
         password: "",
       });
+      toast.success(response.data.message);
 
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Signin failed");
     } finally {
       setLoading(false);
     }
   };
+
+  const handleGoogleAuth = async () =>{
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);    
+      console.log(result)
+      try {
+        const {data} = await axios.post(`${serverUrl}/api/auth/google-auth`,{
+          email:result.user.email,
+        },
+      {withCredentials:true})
+      
+       dispatch(setUserData(data))
+        
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Signin failed");
+        
+      }
+    }
+
 
   return (
     <div
@@ -136,6 +163,7 @@ const SignIn = () => {
           {/* Google Sign In */}
           <div className="mt-4">
             <button
+              onClick={handleGoogleAuth}
               type="button"
               className="w-full flex items-center justify-center gap-3 border rounded-lg py-2 font-medium transition duration-200 hover:shadow-md"
             >
