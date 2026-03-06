@@ -4,8 +4,16 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { serverUrl } from "../App.jsx";
+import toast from "react-hot-toast";
+import { GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth";
+import { auth } from "../../firebase.js";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice.js";
+
+
 
 const SignUp = () => {
+  const dispatch = useDispatch()
   const navigate = useNavigate();
 
   const primaryColor = "#ff4d2d";
@@ -44,7 +52,7 @@ const SignUp = () => {
         { withCredentials: true }
       );
 
-      console.log(response.data);
+      dispatch(setUserData(response.data))
 
       // Reset form only if success
       setFormData({
@@ -54,13 +62,36 @@ const SignUp = () => {
         mobile: "",
         role: "user",
       });
+       toast.success(response.data.message);
 
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Signup failed");
     } finally {
       setLoading(false);
     }
   };
+
+  const handleGoogleAuth = async () =>{
+    if(!formData.mobile){
+      return toast.error("mobile number is required. to signup with google")
+    }
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);    
+    console.log(result)
+    try {
+      const {data} = await axios.post(`${serverUrl}/api/auth/google-auth`,{
+        fullName:result.user.displayName,
+        email:result.user.email,
+        role:formData.role,
+        mobile:formData.mobile
+      },
+    {withCredentials:true})
+    dispatch(setUserData(data))
+      
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Signup failed");
+    }
+  }
 
   return (
     <div
@@ -84,6 +115,7 @@ const SignUp = () => {
               className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2"
               value={formData.fullName}
               onChange={handleChange}
+              required
             />
           </div>
 
@@ -99,6 +131,7 @@ const SignUp = () => {
               className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2"
               value={formData.email}
               onChange={handleChange}
+              required
             />
           </div>
 
@@ -115,6 +148,7 @@ const SignUp = () => {
                 className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2"
                 value={formData.password}
                 onChange={handleChange}
+                required
               />
               <button
                 type="button"
@@ -138,6 +172,7 @@ const SignUp = () => {
               className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2"
               value={formData.mobile}
               onChange={handleChange}
+              required
             />
           </div>
 
@@ -159,6 +194,7 @@ const SignUp = () => {
                     checked={formData.role === item}
                     onChange={handleChange}
                     style={{ accentColor: primaryColor }}
+                    required
                   />
                   <span className="capitalize">{item}</span>
                 </label>
@@ -182,17 +218,7 @@ const SignUp = () => {
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
 
-          {/* Google */}
-          <div className="mt-4">
-            <button
-              type="button"
-              className="w-full flex items-center justify-center gap-3 border rounded-lg py-2 font-medium transition duration-200 hover:shadow-md"
-            >
-              <FcGoogle size={22} />
-              <span>Sign up with Google</span>
-            </button>
-          </div>
-
+         
           {/* Footer */}
           <button
             type="button"
@@ -204,10 +230,21 @@ const SignUp = () => {
               onClick={() => navigate("/signin")}
               className="font-medium cursor-pointer"
             >
-              Login
+              Signin
             </span>
           </button>
         </form>
+         {/* Google */}
+          <div className="mt-4">
+            <button
+              onClick={handleGoogleAuth}
+              className="w-full flex items-center justify-center gap-3 border rounded-lg py-2 font-medium transition duration-200 hover:shadow-md"
+            >
+              <FcGoogle size={22} />
+              <span>Sign up with Google</span>
+            </button>
+          </div>
+
       </div>
     </div>
   );
