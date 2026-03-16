@@ -13,6 +13,9 @@ import useGetMyShop from "./hooks/useGetMyShop";
 import CreateEditShop from "./pages/CreateEditShop";
 import AddItem from "./components/AddItem";
 import EditItem from "./components/EditItem";
+import useGetShopByCity from "./hooks/useGetShopByCity";
+import useGetItemsByCity from "./hooks/useGetItemsByCity";
+import CartPage from "./pages/CartPage";
 
 export const serverUrl = "http://localhost:8000";
 
@@ -21,6 +24,8 @@ const App = () => {
   useGetCurrentUser();
   useGetCity()
   useGetMyShop()
+  useGetShopByCity()
+  useGetItemsByCity()
 
   const { userData } = useSelector((state) => state.user);
 
@@ -62,6 +67,10 @@ const App = () => {
          <Route
           path="/edit-item/:itemId"
           element={userData && <EditItem />}
+        />
+         <Route
+          path="/cart"
+          element={userData && <CartPage />}
         />
 
       </Routes>
