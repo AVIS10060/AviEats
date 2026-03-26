@@ -16,11 +16,16 @@ import EditItem from "./components/EditItem";
 import useGetShopByCity from "./hooks/useGetShopByCity";
 import useGetItemsByCity from "./hooks/useGetItemsByCity";
 import CartPage from "./pages/CartPage";
+import Checkout from "./pages/Checkout";
+import OrderPlaced from "./pages/OrderPlaced";
+import MyOrders from "./pages/MyOrders";
+import useGetMyOrders from "./hooks/useGetMyOrders";
 
 export const serverUrl = "http://localhost:8000";
 
 const App = () => {
 
+  useGetMyOrders()
   useGetCurrentUser();
   useGetCity()
   useGetMyShop()
@@ -71,6 +76,18 @@ const App = () => {
          <Route
           path="/cart"
           element={userData && <CartPage />}
+        />
+         <Route
+          path="/checkout"
+          element={userData && <Checkout />}
+        />
+         <Route
+          path="/order-placed"
+          element={userData && <OrderPlaced />}
+        />
+        <Route
+          path="/my-orders"
+          element={userData && <MyOrders />}
         />
 
       </Routes>
