@@ -1,7 +1,7 @@
 import React from "react";
 import { FaTrash } from "react-icons/fa";
 import { useDispatch } from "react-redux";
-import { updateQuantity } from "../../redux/userSlice";
+import { removeCartItem, updateQuantity } from "../../redux/userSlice";
 
 const CartItemCard = ({ item }) => {
 
@@ -90,7 +90,7 @@ const CartItemCard = ({ item }) => {
 
         </div>
 
-        <button className="text-red-500 hover:text-red-600">
+        <button onClick={()=>dispatch(removeCartItem(item.id))} className="text-red-500 hover:text-red-600">
           <FaTrash/>
         </button>
 
