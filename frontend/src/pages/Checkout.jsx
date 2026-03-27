@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import { setAddress, setLocation } from "../redux/mapSlice";
 import { useRef } from "react";
 import OrderPaymentSummary from "../components/user/OrderPaymentSummary";
+import { serverUrl } from "../App";
 
 
 
@@ -221,7 +222,7 @@ useEffect(() => {
         </MapContainer>
 
       </div>
-      <OrderPaymentSummary></OrderPaymentSummary>
+      <OrderPaymentSummary address = {address} lat = {location.lat} lon = {location.lon} ></OrderPaymentSummary>
 
     </div>
   );
