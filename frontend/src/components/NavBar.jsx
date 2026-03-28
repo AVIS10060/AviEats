@@ -118,7 +118,7 @@ const Navbar = ({ user }) => {
          
           </>
           }
-           <div className="flex items-center gap-2 cursor-pointer relative px-3 py-1 rounded-lg bg-[#ff4d2d]/10 text-[#ff4d2d] font-medium">
+           <div onClick={()=>navigate("/my-orders")} className="flex items-center gap-2 cursor-pointer relative px-3 py-1 rounded-lg bg-[#ff4d2d]/10 text-[#ff4d2d] font-medium">
           <FaReceipt size={20}/>
           <span>My orders</span>
           <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-1.5 rounded-full">
