@@ -23,7 +23,6 @@ const useGetMyShop = () => {
                 toast.error(error.response?.data?.message || error.message)
                 
             }
-
         }
         fetchShop()
 
