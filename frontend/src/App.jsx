@@ -25,8 +25,8 @@ export const serverUrl = "http://localhost:8000";
 
 const App = () => {
 
-  useGetMyOrders()
   useGetCurrentUser();
+  useGetMyOrders()
   useGetCity()
   useGetMyShop()
   useGetShopByCity()
