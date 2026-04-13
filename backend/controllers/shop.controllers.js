@@ -83,38 +83,56 @@ export const createEditShop = async (req, res) => {
   }
 };
 
-export const getMyShop = async(req,res) =>{
-    try {
-       const shop = await Shop.findOne({ owner: req.userId }).populate([
-  { path: "owner" },
-  { path: "items", options: { sort: { updatedAt: -1 } } }
-])
-        if(!shop){
-            return null
-        }
-        return res.status(200).json(shop)
+export const getMyShop = async (req, res) => {
+  try {
+    const shop = await Shop.findOne({ owner: req.userId }).populate([
+      { path: "owner" },
+      { path: "items", options: { sort: { updatedAt: -1 } } }
+    ]);
 
-        
-    } catch (error) {
-        return sendResponse(res,500,`${error} in getting shop`)
-        
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop not found"
+      });
     }
-}
+
+    return res.status(200).json(shop);
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
 
-export const getShopByCity = async(req,res) =>{
-    try {
-        const {city} = req.params
-        const shops = await Shop.find({city:{$regex:new RegExp(`${city}$`,"i")}}).populate("items")
+export const getShopByCity = async (req, res) => {
+  try {
+    const { city } = req.params;
 
-        if(!shops){
-            return sendResponse(res,400,"shops not found ")
-        }
-
-        return res.status(200).json(shops)       
-    } catch (error) {
-        console.log(error)
-        
+    // ❗ validate input
+    if (!city || city === "null" || city === "undefined") {
+      return res.status(400).json({ message: "City is required" });
     }
-}
+
+    const shops = await Shop.find({
+      city: { $regex: new RegExp(`${city}$`, "i") }
+    }).populate("items");
+
+    
+
+    // ❗ correct check
+    if (!shops) {
+      return res.status(404).json({ message: "No shops found" });
+    }
+
+    return res.status(200).json(shops);
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
 
