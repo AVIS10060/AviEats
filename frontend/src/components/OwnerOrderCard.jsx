@@ -1,6 +1,13 @@
+import axios from "axios";
 import React from "react";
+import { serverUrl } from "../App";
+import { useDispatch } from "react-redux";
+import { setMyShopData } from "../redux/ownerSlice";
 
 const OwnerOrderCard = ({ data }) => {
+  const dispatch = useDispatch()
+  console.log(data.shopOrders[0].status)
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-GB", {
@@ -9,6 +16,27 @@ const OwnerOrderCard = ({ data }) => {
       year: "numeric",
     });
   };
+
+
+  // handle update status 
+
+  const handleUpdateStatus = async(orderId,shopId,status) =>{
+    try {
+      const result = await axios.post(`${serverUrl}/api/order/update-status/${orderId}/${shopId}`,{status},{
+        withCredentials:true
+        
+      })
+      console.log(result.data)
+      
+    } catch (error) {
+      console.log(error)
+      
+    }
+
+
+
+
+  }
 
   // safety: always ensure array
   const shopOrders = data.shopOrders || [];
@@ -90,10 +118,10 @@ const OwnerOrderCard = ({ data }) => {
 
             <select
               className="border px-2 py-1 rounded-md text-sm"
-              defaultValue={shopOrder.status}
+              onChange={(e)=>handleUpdateStatus(data._id,data.shopOrders[0].shop._id,e.target.value)}
             >
               <option value="pending">Pending</option>
-              <option value="accepted">Accepted</option>
+              <option value="preparing">Preparing</option>
               <option value="out_for_delivery">Out for delivery</option>
               <option value="delivered">Delivered</option>
             </select>
