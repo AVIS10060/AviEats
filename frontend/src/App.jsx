@@ -20,19 +20,26 @@ import Checkout from "./pages/Checkout";
 import OrderPlaced from "./pages/OrderPlaced";
 import MyOrders from "./pages/MyOrders";
 import useGetMyOrders from "./hooks/useGetMyOrders";
+import useUpdateLocation from "./hooks/useUpdateLocation";
 
 export const serverUrl = "http://localhost:8000";
 
 const App = () => {
+  const { userData, isLoading } = useSelector((state) => state.user);
+useGetCurrentUser();
+useGetMyOrders();
+useGetMyShop();
+useGetShopByCity();
+useGetItemsByCity();  
+useGetCity()
+useUpdateLocation()
 
-  useGetCurrentUser();
-  useGetMyOrders()
-  useGetCity()
-  useGetMyShop()
-  useGetShopByCity()
-  useGetItemsByCity()
 
-  const { userData } = useSelector((state) => state.user);
+  
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
@@ -41,15 +48,15 @@ const App = () => {
       <Routes>
 
         {/* Public routes */}
-        <Route
-          path="/signup"
-          element={userData ? <Navigate to="/" /> : <SignUp />}
-        />
+    <Route
+  path="/signin"
+  element={!userData ? <SignIn /> : <Navigate to="/" />}
+/>
 
-        <Route
-          path="/signin"
-          element={userData ? <Navigate to="/" /> : <SignIn />}
-        />
+<Route
+  path="/signup"
+  element={!userData ? <SignUp /> : <Navigate to="/" />}
+/>
 
         <Route
           path="/forgot-password"
