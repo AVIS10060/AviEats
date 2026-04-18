@@ -15,7 +15,7 @@ const Home = () => {
   <div className='w-[100vw] h-full  flex flex-col item-center'>
         {userData.role == "user" && <UserDashboard></UserDashboard>}
         {userData.role == "owner" && <OwnerDashboard></OwnerDashboard>}
-        {userData.role == "deliveryboy" && <DeliveryBoyDashboard></DeliveryBoyDashboard>}
+        {userData.role == "deliveryBoy" && <DeliveryBoyDashboard></DeliveryBoyDashboard>}
 
   </div>
   </>
