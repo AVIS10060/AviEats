@@ -78,6 +78,8 @@ const SignIn = () => {
       {withCredentials:true})
       
        dispatch(setUserData(data))
+       toast.success("Signed in successfully!");
+        navigate("/"); // This should now trigger correctly
         
       } catch (error) {
         toast.error(error.response?.data?.message || "Signin failed");
