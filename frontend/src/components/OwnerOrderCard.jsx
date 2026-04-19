@@ -1,12 +1,14 @@
 import axios from "axios";
-import React from "react";
+import React, { useState } from "react";
 import { serverUrl } from "../App";
 import { useDispatch } from "react-redux";
 import { setMyShopData } from "../redux/ownerSlice";
+import { updateOrderStatus } from "../redux/userSlice";
 
 const OwnerOrderCard = ({ data }) => {
-  const dispatch = useDispatch()
-  console.log(data.shopOrders[0].status)
+  const [availableBoys, setAvailableBoys] = useState([]);
+  const dispatch = useDispatch();
+  console.log(data.shopOrders[0].status);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -17,57 +19,47 @@ const OwnerOrderCard = ({ data }) => {
     });
   };
 
+  // handle update status
 
-  // handle update status 
-
-  const handleUpdateStatus = async(orderId,shopId,status) =>{
+  const handleUpdateStatus = async (orderId, shopId, status) => {
     try {
-      const result = await axios.post(`${serverUrl}/api/order/update-status/${orderId}/${shopId}`,{status},{
-        withCredentials:true
-        
-      })
-      console.log(result.data)
-      
+      const result = await axios.post(
+        `${serverUrl}/api/order/update-status/${orderId}/${shopId}`,
+        { status },
+        {
+          withCredentials: true,
+        },
+      );
+      dispatch(updateOrderStatus({ orderId, shopId, status }));
+      setAvailableBoys(result.data.availableBoys);
+      console.log("API RESPONSE:", result.data.availableBoys);
     } catch (error) {
-      console.log(error)
-      
+      console.log(error);
     }
-
-
-
-
-  }
+  };
 
   // safety: always ensure array
   const shopOrders = data.shopOrders || [];
 
   // optional: skip empty orders
   if (shopOrders.length === 0) return null;
+  console.log(data);
 
   return (
     <div className="bg-white shadow-md rounded-xl p-4 mb-6 border max-w-3xl mx-auto">
-
       {/* 🔹 Header */}
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-lg font-semibold text-gray-800">
           Order #{data._id.slice(-6)}
         </h2>
-        <p className="text-sm text-gray-500">
-          {formatDate(data.createdAt)}
-        </p>
+        <p className="text-sm text-gray-500">{formatDate(data.createdAt)}</p>
       </div>
 
       {/* 🔹 User Details */}
       <div className="mb-3">
-        <p className="font-medium text-gray-800">
-          {data.user?.name || "User"}
-        </p>
-        <p className="text-sm text-gray-600">
-          {data.user?.email}
-        </p>
-        <p className="text-sm text-gray-600">
-          📞 {data.user?.mobile}
-        </p>
+        <p className="font-medium text-gray-800">{data.user?.name || "User"}</p>
+        <p className="text-sm text-gray-600">{data.user?.email}</p>
+        <p className="text-sm text-gray-600">📞 {data.user?.mobile}</p>
       </div>
 
       {/* 🔹 Address */}
@@ -82,23 +74,17 @@ const OwnerOrderCard = ({ data }) => {
       {/* 🔹 Shop Orders (ARRAY now) */}
       {shopOrders.map((shopOrder, index) => (
         <div key={index} className="mb-4">
-
           {/* 🔸 Items */}
           <div className="flex gap-3 flex-wrap">
             {shopOrder.shopOrderItems.map((item, i) => (
-              <div
-                key={i}
-                className="border rounded-lg p-2 w-[130px]"
-              >
+              <div key={i} className="border rounded-lg p-2 w-[130px]">
                 <img
                   src={item.item?.image}
                   alt={item.name}
                   className="w-full h-20 object-cover rounded-md mb-1"
                 />
 
-                <p className="text-sm font-medium text-gray-800">
-                  {item.name}
-                </p>
+                <p className="text-sm font-medium text-gray-800">{item.name}</p>
 
                 <p className="text-xs text-gray-500">
                   Qty: {item.quantity} x ₹{item.price}
@@ -118,14 +104,40 @@ const OwnerOrderCard = ({ data }) => {
 
             <select
               className="border px-2 py-1 rounded-md text-sm"
-              onChange={(e)=>handleUpdateStatus(data._id,data.shopOrders[0].shop._id,e.target.value)}
+              onChange={(e) =>
+                handleUpdateStatus(
+                  data._id,
+                  data.shopOrders[0].shop._id,
+                  e.target.value,
+                )
+              }
             >
               <option value="pending">Pending</option>
               <option value="preparing">Preparing</option>
-              <option value="out_for_delivery">Out for delivery</option>
+              <option value="out for delivery">Out for delivery</option>
               <option value="delivered">Delivered</option>
             </select>
           </div>
+
+          {shopOrder.status === "out for delivery" && (
+            <div className="mt-3 p-2 border rounded-lg text-sm bg-orange-50">
+              <p>available delivery boys</p>
+
+              {availableBoys.length > 0 ? (
+                availableBoys.map((b, index) => (
+                  <div key={index}>
+                    {b.fullName} - {b.mobile}
+                  </div>
+                ))
+              ) : data?.shopOrders?.assignedDeliveryBoy ? (
+                <>
+                  <div> assigned delivery boy {data.shopOrders.assignedDeliveryBoy.fullName}</div>
+                </>
+              ) : (
+                <div>Waiting for delivery boy to accept</div>
+              )}
+            </div>
+          )}
 
           {/* 🔸 Subtotal */}
           <div className="text-right text-sm font-medium text-gray-700 mt-1">
@@ -135,8 +147,6 @@ const OwnerOrderCard = ({ data }) => {
           <hr className="mt-3" />
         </div>
       ))}
-
-     
     </div>
   );
 };
