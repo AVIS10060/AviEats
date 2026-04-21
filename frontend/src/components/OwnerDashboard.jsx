@@ -15,10 +15,10 @@ const OwnerDashboard = () => {
 
   const dispatch = useDispatch()
 
-  const handleDeleteItem = async({itemId}) =>{
+  const handleDeleteItem = async(itemId) =>{
     console.log(itemId)
     try {
-      const result = await axios.get(`${serverUrl}/item/delete/${itemId}`,{withCredentials:true},)
+      const result = await axios.get(`${serverUrl}/api/item/delete/${itemId}`,{withCredentials:true},)
       dispatch(setMyShopData(result.data))
       
       
@@ -32,7 +32,7 @@ const OwnerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar />
+      {/* <Navbar /> */}
 
       {/* If no shop exists */}
 
