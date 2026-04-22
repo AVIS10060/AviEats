@@ -4,6 +4,7 @@ const userSlice = createSlice({
     name: "user",
     initialState:{
         userData:null,
+        isLoading:true,
         currentCity:null,
         currentState:null,
         currentAddress:null,
@@ -11,7 +12,8 @@ const userSlice = createSlice({
         itemsInMyCity:null,
         cartItems:[],
         totalAmount:0,
-        myOrders:[]
+        myOrders:[],
+        error:null
 
 
     },
@@ -20,6 +22,24 @@ const userSlice = createSlice({
         state.userData = action.payload
 
         },
+        setUserLoading: (state) => {
+        state.isLoading = true;
+        },
+      setUserSuccess: (state, action) => {
+  state.isLoading = false;
+
+  // 🔴 guard against empty object
+  if (!action.payload || !action.payload._id) {
+    state.userData = null;
+  } else {
+    state.userData = action.payload;
+  }
+},
+      setUserFailure: (state, action) => {
+      state.isLoading = false;
+      state.userData = null;   // 🔥 CRITICAL
+      state.error = action.payload || null;
+    },
         setCurrentCity: (state,action)=>{
         state.currentCity = action.payload
 
@@ -68,7 +88,24 @@ const userSlice = createSlice({
         },
         addMyOrder:(state,action) =>{
             state.myOrders=[action.payload,...state.myOrders]
-        }
+        },
+        updateOrderStatus: (state, action) => {
+  const { orderId, shopId, status } = action.payload;
+
+  const order = state.myOrders.find(
+    o => o._id.toString() === orderId.toString()
+  );
+
+  if (!order || !order.shopOrders) return;
+
+  const shopOrder = order.shopOrders.find(
+    so => so.shop._id.toString() === shopId.toString()
+  );
+
+  if (shopOrder) {
+    shopOrder.status = status;
+  }
+}
        
 
 
@@ -85,6 +122,7 @@ export const  {addToCart}= userSlice.actions
 export const  {updateQuantity}= userSlice.actions
 export const  {removeCartItem}= userSlice.actions
 export const  {setMyOrders,addMyOrder}= userSlice.actions
+export const { setUserLoading, setUserSuccess, setUserFailure ,updateOrderStatus} = userSlice.actions;
 
 
 export default userSlice.reducer
