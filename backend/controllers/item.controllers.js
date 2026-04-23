@@ -133,3 +133,73 @@ export const getItemByCity = async (req,res)=>{
         
     }
 }
+
+export const getItemByShop = async(req,res) =>{
+    try {
+        const {shopId} = req.params 
+
+        const shop = await Shop.findById(shopId).populate("items")
+
+        if(!shop){
+            sendResponse(res,400,"shop niddd found")
+
+        }
+
+        return res.status(200).json({
+            shop,items:shop.items
+        })
+        
+    } catch (error) {
+        return sendResponse(res,500,"error")
+        
+    }
+}
+
+
+export const searchItems = async (req,res) =>{
+    try {
+        const {query,city} = req.query 
+
+        if(!query || !city){
+
+            return null
+        }
+        if(!city){
+         return res.status(400).json({message:"city is required "})
+        }
+        const shops = await Shop.find({city:{$regex:new RegExp(`${city}$`,"i")}}).populate("items")
+
+        if(!shops){
+            return res.status(400).json({message:"shops not found"})
+        }
+
+        const shopIds = shops.map(i=> i._id)
+
+        console.log(shopIds)
+
+        const items = await Item.find({
+            shop:{$in:shopIds},
+            $or:[
+                {name:{$regex:query,$options:"i"}},
+                {category:{$regex:query,$options:"i"}}
+            ]
+        }).populate("shop", "name image")
+
+        console.log(items)
+
+        console.log("shopIds:", shopIds)
+console.log("query:", query)
+
+const testItems = await Item.find({ shop: { $in: shopIds } })
+console.log("items without search:", testItems)
+
+
+        return res.status(200).json(items)
+
+
+
+    } catch (error) {
+        return sendResponse(res,500,error)
+        
+    }
+}
