@@ -26,13 +26,14 @@ import useGetShopByCity from "./hooks/useGetShopByCity";
 import useGetItemsByCity from "./hooks/useGetItemsByCity";
 import useGetMyOrders from "./hooks/useGetMyOrders";
 import useUpdateLocation from "./hooks/useUpdateLocation";
+import TrackOrderPage from "./pages/TrackOrderPage";
+import Shop from "./pages/Shop";
 
 export const serverUrl = "http://localhost:8000";
 
 const App = () => {
   const { userData, isLoading } = useSelector((state) => state.user);
 
-  // Hooks (must internally use useEffect)
   useGetCurrentUser();
   useGetMyOrders();
   useGetMyShop();
@@ -41,7 +42,7 @@ const App = () => {
   useGetCity();
   useUpdateLocation();
 
-  // 🔥 Prevent blank screen during loading
+  // ✅ BLOCK render until auth resolved
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -52,15 +53,19 @@ const App = () => {
 
       <Routes>
 
-        {/* 🔓 Public Routes */}
+        {/* Public */}
         <Route
           path="/signin"
-          element={!userData ? <SignIn /> : <Navigate to="/" />}
+          element={
+            userData ? <Navigate to="/" replace /> : <SignIn />
+          }
         />
 
         <Route
           path="/signup"
-          element={!userData ? <SignUp /> : <Navigate to="/" />}
+          element={
+            userData ? <Navigate to="/" replace /> : <SignUp />
+          }
         />
 
         <Route
@@ -68,51 +73,85 @@ const App = () => {
           element={<ForgotPassword />}
         />
 
-        {/* 🔐 Protected Routes */}
+        {/* Protected */}
         <Route
           path="/"
-          element={userData ? <Home /> : <Navigate to="/signin" />}
+          element={
+            userData ? <Home /> : <Navigate to="/signin" replace />
+          }
         />
 
         <Route
           path="/create-edit-shop"
-          element={userData ? <CreateEditShop /> : <Navigate to="/signin" />}
+          element={
+            userData ? (
+              <CreateEditShop />
+            ) : (
+              <Navigate to="/signin" replace />
+            )
+          }
         />
 
         <Route
           path="/add-food"
-          element={userData ? <AddItem /> : <Navigate to="/signin" />}
+          element={
+            userData ? <AddItem /> : <Navigate to="/signin" replace />
+          }
         />
 
         <Route
           path="/edit-item/:itemId"
-          element={userData ? <EditItem /> : <Navigate to="/signin" />}
+          element={
+            userData ? <EditItem /> : <Navigate to="/signin" replace />
+          }
         />
 
         <Route
           path="/cart"
-          element={userData ? <CartPage /> : <Navigate to="/signin" />}
+          element={
+            userData ? <CartPage /> : <Navigate to="/signin" replace />
+          }
         />
 
         <Route
           path="/checkout"
-          element={userData ? <Checkout /> : <Navigate to="/signin" />}
+          element={
+            userData ? <Checkout /> : <Navigate to="/signin" replace />
+          }
         />
 
         <Route
           path="/order-placed"
-          element={userData ? <OrderPlaced /> : <Navigate to="/signin" />}
+          element={
+            userData ? <OrderPlaced /> : <Navigate to="/signin" replace />
+          }
         />
 
         <Route
           path="/my-orders"
-          element={userData ? <MyOrders /> : <Navigate to="/signin" />}
+          element={
+            userData ? <MyOrders /> : <Navigate to="/signin" replace />
+          }
+        />
+         <Route
+          path="/track-order/:orderId"
+          element={
+            userData ? <TrackOrderPage /> : <Navigate to="/signin" replace />
+          }
+        />
+         <Route
+          path="/shop/:shopId"
+          element={
+            userData ? <Shop /> : <Navigate to="/signin" replace />
+          }
         />
 
-        {/* 🔁 Fallback route */}
+        {/* Fallback */}
         <Route
           path="*"
-          element={<Navigate to={userData ? "/" : "/signin"} />}
+          element={
+            <Navigate to={userData ? "/" : "/signin"} replace />
+          }
         />
 
       </Routes>
