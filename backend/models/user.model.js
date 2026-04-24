@@ -1,4 +1,5 @@
 import mongoose, { mongo, Schema } from "mongoose";
+import { type } from "os";
 
 
 const userSchema = new mongoose.Schema({
@@ -50,8 +51,13 @@ const userSchema = new mongoose.Schema({
         default: [0, 0],
       },
     },
-  
-    
+    socketId:{
+        type:String,
+    },
+    isOnline:{
+        type:Boolean,
+        default:false
+    }
 },{timestamps:true
 
 })
