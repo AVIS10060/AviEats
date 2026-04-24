@@ -7,16 +7,19 @@ export const getCurrrentUser = async(req,res) =>{
         const userId = req.userId
         console.log(userId)
         if (!userId){
+            res.clearCookie("token"); // ✅ clear invalid session
             return sendResponse(res,400,"userId not found")
         }
         const user = await User.findById(userId)
         if(!user){
+            res.clearCookie("token"); // ✅ clear invalid session
             return sendResponse(res,400,"user not found")
         }
 
         return res.status(200).json(user)
         
     } catch (error) {
+        res.clearCookie("token"); // ✅ clear invalid session
         return sendResponse(res,400,error)
         
     }
