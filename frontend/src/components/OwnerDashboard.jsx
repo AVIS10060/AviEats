@@ -1,42 +1,48 @@
-import React from "react";
-import Navbar from "./NavBar";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FaUtensils } from "react-icons/fa";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
-import axios from "axios";
-import { serverUrl } from "../App";
+import toast from "react-hot-toast";
 import { setMyShopData } from "../redux/ownerSlice";
+import { Skeleton } from "boneyard-js/react";
+import { OwnerDashboardFallback } from "./skeletons";
+import api from "../api/axios";
 
 const OwnerDashboard = () => {
-  const { myShopData } = useSelector((state) => state.owner);
+  const { myShopData, isShopLoading } = useSelector((state) => state.owner);
   const navigate = useNavigate();
 
   const dispatch = useDispatch()
 
-  const handleDeleteItem = async(itemId) =>{
-    console.log(itemId)
+  const handleDeleteItem = async (itemId) => {
     try {
-      const result = await axios.get(`${serverUrl}/api/item/delete/${itemId}`,{withCredentials:true},)
-      dispatch(setMyShopData(result.data))
-      
-      
+      const result = await api.get(`/item/delete/${itemId}`)
+      dispatch(setMyShopData(result.data.shop))
+      toast.success('Item removed successfully')
     } catch (error) {
-      console.log(error)
-      
+      console.error(error)
+      toast.error(error.response?.data?.message || 'Unable to delete item')
     }
-
   }
+
   
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* <Navbar /> */}
-
-      {/* If no shop exists */}
-
-      {!myShopData && (
+      {isShopLoading ? (
+        <Skeleton
+          name="owner-dashboard"
+          loading={true}
+          fallback={<OwnerDashboardFallback />}
+          fixture={<OwnerDashboardFallback />}
+          animate="shimmer"
+          transition
+        >
+          <OwnerDashboardFallback />
+        </Skeleton>
+      ) : !myShopData?._id ? (
         <div className="flex items-center justify-center h-[80vh] px-4">
           <div className="flex flex-col items-center gap-4 text-center">
 
@@ -55,12 +61,8 @@ const OwnerDashboard = () => {
 
           </div>
         </div>
-      )}
-
-      {/* If shop exists */}
-
-      {myShopData && (
-        <div className="px-4 sm:px-6 lg:px-10 py-6 flex flex-col items-center gap-8 border border-red-500">
+      ) : (
+        <div className="px-4 sm:px-6 lg:px-10 py-6 flex flex-col items-center gap-8">
 
           <h2 className="text-xl sm:text-2xl font-semibold text-center">
             Welcome to {myShopData.name}
