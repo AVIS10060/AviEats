@@ -1,32 +1,41 @@
-import axios from 'axios'
-import React, { useEffect } from 'react'
-import { serverUrl } from '../App'
+import { useEffect } from 'react'
 import toast from 'react-hot-toast'
-import { setUserData } from '../redux/userSlice'
 import { useDispatch, useSelector } from 'react-redux'
-import { setMyShopData } from '../redux/ownerSlice'
+import { setMyShopData, setShopLoading } from '../redux/ownerSlice'
 
+// ✅ use centralized axios instance
+import api from '../api/axios'
 
 const useGetMyShop = () => {
-    const dispatch = useDispatch()
-    const userData = useSelector(state => state.user)
+  const dispatch = useDispatch()
+  const { userData } = useSelector(state => state.user)
 
-    useEffect(()=>{
+  useEffect(() => {
 
-        const fetchShop = async() =>{
+    if (!userData) return
 
-            try {
-                const response = await axios.get(`${serverUrl}/api/shop/get-my`,{withCredentials:true})
-                 dispatch(setMyShopData(response.data))
-                
-            } catch (error) {
-                toast.error(error.response?.data?.message || error.message)
-                
-            }
+    if (userData.role === "owner") {
+
+      const fetchShop = async () => {
+        dispatch(setShopLoading(true)) // ✅ keep feature loading
+
+        try {
+          const response = await api.get('/shop/get-my') // ✅ no baseURL needed
+
+          dispatch(setMyShopData(response.data.shop))
+          console.log(response.data.shop)
+
+        } catch (error) {
+          toast.error(error.response?.data?.message || error.message)
+        } finally {
+          dispatch(setShopLoading(false))
         }
-        fetchShop()
+      }
 
-    },[userData])
+      fetchShop()
+    }
+
+  }, [userData, dispatch])
 }
 
 export default useGetMyShop
