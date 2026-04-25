@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { io } from "socket.io-client"
 
 // Pages
 import SignUp from "./pages/SignUp";
@@ -28,11 +29,16 @@ import useGetMyOrders from "./hooks/useGetMyOrders";
 import useUpdateLocation from "./hooks/useUpdateLocation";
 import TrackOrderPage from "./pages/TrackOrderPage";
 import Shop from "./pages/Shop";
+import { setSocket } from "./redux/userSlice";
+import { Skeleton } from "boneyard-js/react";
+import { AppShellFallback } from "./components/skeletons";
+import GlobalLoader from "./GlobalLoader";
 
 export const serverUrl = "http://localhost:8000";
 
 const App = () => {
   const { userData, isLoading } = useSelector((state) => state.user);
+  const dispatch = useDispatch()
 
   useGetCurrentUser();
   useGetMyOrders();
@@ -42,13 +48,46 @@ const App = () => {
   useGetCity();
   useUpdateLocation();
 
+useEffect(() => {
+    const socketInstance = io(serverUrl, { withCredentials: true })
+
+    dispatch(setSocket(socketInstance))
+
+    socketInstance.on("connect", () => {
+      console.log("Connected:", socketInstance.id)
+
+      if (userData?._id) {
+        socketInstance.emit("identity", { userId: userData._id })
+      }
+    })
+
+    return () => {
+      socketInstance.disconnect()
+    }
+  }, [dispatch, userData])
+
+
+
+
   // ✅ BLOCK render until auth resolved
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <Skeleton
+        name="app-shell"
+        loading={isLoading}
+        fallback={<AppShellFallback />}
+        fixture={<AppShellFallback />}
+        animate="shimmer"
+      >
+        <AppShellFallback />
+      </Skeleton>
+    );
   }
 
   return (
     <>
+      <GlobalLoader>
+
       <Toaster position="top-right" reverseOrder={false} />
 
       <Routes>
@@ -59,19 +98,19 @@ const App = () => {
           element={
             userData ? <Navigate to="/" replace /> : <SignIn />
           }
-        />
+          />
 
         <Route
           path="/signup"
           element={
             userData ? <Navigate to="/" replace /> : <SignUp />
           }
-        />
+          />
 
         <Route
           path="/forgot-password"
           element={<ForgotPassword />}
-        />
+          />
 
         {/* Protected */}
         <Route
@@ -79,7 +118,7 @@ const App = () => {
           element={
             userData ? <Home /> : <Navigate to="/signin" replace />
           }
-        />
+          />
 
         <Route
           path="/create-edit-shop"
@@ -90,61 +129,61 @@ const App = () => {
               <Navigate to="/signin" replace />
             )
           }
-        />
+          />
 
         <Route
           path="/add-food"
           element={
             userData ? <AddItem /> : <Navigate to="/signin" replace />
           }
-        />
+          />
 
         <Route
           path="/edit-item/:itemId"
           element={
             userData ? <EditItem /> : <Navigate to="/signin" replace />
           }
-        />
+          />
 
         <Route
           path="/cart"
           element={
             userData ? <CartPage /> : <Navigate to="/signin" replace />
           }
-        />
+          />
 
         <Route
           path="/checkout"
           element={
             userData ? <Checkout /> : <Navigate to="/signin" replace />
           }
-        />
+          />
 
         <Route
           path="/order-placed"
           element={
             userData ? <OrderPlaced /> : <Navigate to="/signin" replace />
           }
-        />
+          />
 
         <Route
           path="/my-orders"
           element={
             userData ? <MyOrders /> : <Navigate to="/signin" replace />
           }
-        />
+          />
          <Route
           path="/track-order/:orderId"
           element={
             userData ? <TrackOrderPage /> : <Navigate to="/signin" replace />
           }
-        />
+          />
          <Route
           path="/shop/:shopId"
           element={
             userData ? <Shop /> : <Navigate to="/signin" replace />
           }
-        />
+          />
 
         {/* Fallback */}
         <Route
@@ -152,9 +191,10 @@ const App = () => {
           element={
             <Navigate to={userData ? "/" : "/signin"} replace />
           }
-        />
+          />
 
       </Routes>
+          </GlobalLoader>
     </>
   );
 };
