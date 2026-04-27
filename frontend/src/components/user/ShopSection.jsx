@@ -2,8 +2,6 @@ import React, { useRef } from "react";
 import { useSelector } from "react-redux";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { Skeleton } from "boneyard-js/react";
-import { ShopSectionFallback } from "../skeletons";
 
 const ShopSection = () => {
 
@@ -34,15 +32,15 @@ const ShopSection = () => {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-gray-500">
+        Loading shops...
+      </div>
+    );
+  }
+
   return (
-    <Skeleton
-      name="shop-section"
-      loading={isLoading}
-      fallback={<ShopSectionFallback />}
-      fixture={<ShopSectionFallback />}
-      animate="shimmer"
-      transition
-    >
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       <h1 className="text-2xl sm:text-3xl font-semibold mb-6">
@@ -106,7 +104,6 @@ const ShopSection = () => {
       </div>
 
     </div>
-    </Skeleton>
   );
 };
 
