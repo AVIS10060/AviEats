@@ -48,7 +48,7 @@ app.use(cookieParser());
 // Static folder
 app.use("/public", express.static("public"));
 
-app.options("*", cors());
+
 
 // Routes
 app.use("/api/auth", authRouter);
