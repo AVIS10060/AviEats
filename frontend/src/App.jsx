@@ -31,7 +31,8 @@ import TrackOrderPage from "./pages/TrackOrderPage";
 import Shop from "./pages/Shop";
 import { setSocket } from "./redux/userSlice";
 
-export const serverUrl = "http://localhost:8000";
+// export const serverUrl = "http://localhost:8000";
+export const serverUrl = "https://avieats-backend.onrender.com";
 
 const App = () => {
   const { userData, isLoading } = useSelector((state) => state.user);
