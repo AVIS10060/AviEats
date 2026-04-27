@@ -6,8 +6,6 @@ import axios from "axios"
 import "leaflet/dist/leaflet.css"
 import { setLocation } from "../redux/mapSlice"
 import OrderPaymentSummary from "../components/user/OrderPaymentSummary"
-import { Skeleton } from "boneyard-js/react"
-import { CheckoutFallback } from "../components/skeletons"
 import toast from "react-hot-toast"
 
 
@@ -183,16 +181,9 @@ const isUserTyping = useRef(false);
   // Safety check
   if (!location?.lat || !location?.lon) {
     return (
-      <Skeleton
-        name="checkout-page"
-        loading
-        fallback={<CheckoutFallback />}
-        fixture={<CheckoutFallback />}
-        animate="shimmer"
-        snapshotConfig={{ excludeSelectors: [".leaflet-container"] }}
-      >
-        <CheckoutFallback />
-      </Skeleton>
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading checkout...
+      </div>
     );
   }
 
