@@ -5,8 +5,6 @@ import { FaShoppingCart } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../redux/userSlice";
 import toast from "react-hot-toast";
-import { Skeleton } from "boneyard-js/react";
-import { ItemSectionFallback } from "../skeletons";
 
 const ItemSection = () => {
   const { itemsInMyCity, isItemsLoading, currentCity } = useSelector((state) => state.user);
@@ -52,15 +50,15 @@ const ItemSection = () => {
     updateList()
   }, [itemsInMyCity])
 
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-gray-500">
+        Loading items...
+      </div>
+    );
+  }
+
   return (
-    <Skeleton
-      name="item-section"
-      loading={isLoading}
-      fallback={<ItemSectionFallback />}
-      fixture={<ItemSectionFallback />}
-      animate="shimmer"
-      transition
-    >
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-2xl sm:text-3xl font-semibold mb-8">
         Suggested food items
@@ -149,7 +147,6 @@ const ItemSection = () => {
           ))}
       </div>
     </div>
-    </Skeleton>
   );
 };
 
