@@ -11,7 +11,7 @@ const shopSchema = new mongoose.Schema({
     },
     owner:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"Shop"
+        ref:"User"
     },
     city:{
         type:String,

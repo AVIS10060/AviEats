@@ -2,10 +2,9 @@ import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { FaUtensils } from "react-icons/fa"
 import toast from "react-hot-toast"
-import axios from "axios"
-import { serverUrl } from "../App"
 import { setMyShopData } from "../redux/ownerSlice"
 import { useDispatch } from "react-redux"
+import api from "../api/axios"
 
 const AddItem = () => {
   const dispatch = useDispatch()
@@ -72,12 +71,8 @@ const AddItem = () => {
         data.append("image", backendImage)
       }
 
-      const res = await axios.post(
-        `${serverUrl}/api/item/add-item`,
-        data,
-        { withCredentials: true }
-      )
-      dispatch(setMyShopData(res.data))
+      const res = await api.post("/item/add-item", data)
+      dispatch(setMyShopData(res.data.shop))
       console.log(res.data)
 
       toast.success(res.data.message || "Item added successfully")
