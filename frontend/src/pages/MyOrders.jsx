@@ -5,8 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import UserOrderCard from "../components/user/UserOrderCard";
 import OwnerOrderCard from "../components/OwnerOrderCard";
 import { setMyOrders, updateRealTimeOrderStatus } from "../redux/userSlice";
-import { Skeleton } from "boneyard-js/react";
-import { OrderListFallback } from "../components/skeletons";
 
 const MyOrders = () => {
   useGetMyOrders();
@@ -56,15 +54,15 @@ const updateStatusHandler = ({ orderId, shopId, userId, status }) => {
 }, [dispatch, socket, userData]);
 
 
+  if (isOrdersLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading orders...
+      </div>
+    );
+  }
+
   return (
-    <Skeleton
-      name="my-orders-page"
-      loading={isOrdersLoading}
-      fallback={<OrderListFallback role={userData?.role} />}
-      fixture={<OrderListFallback role={userData?.role} />}
-      animate="shimmer"
-      transition
-    >
     <div className="min-h-screen bg-gray-100 px-4 py-6">
       {/* 🔹 Header */}
       <div className="max-w-3xl mx-auto mb-6 relative">
@@ -99,7 +97,6 @@ const updateStatusHandler = ({ orderId, shopId, userId, status }) => {
         )}
       </div>
     </div>
-    </Skeleton>
   );
 };
 

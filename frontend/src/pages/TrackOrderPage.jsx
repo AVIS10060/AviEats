@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import DeliveryBoyTracking from '../components/DeliveryBoyTracking'
 import { useSelector } from 'react-redux'
-import { Skeleton } from 'boneyard-js/react'
-import { TrackOrderFallback } from '../components/BoneyardFallbacks'
 import api from '../api/axios'
 
 const TrackOrderPage = () => {
@@ -44,17 +42,15 @@ const TrackOrderPage = () => {
     })
   },[socket])
 
+  if (isOrderLoading || !currentOrder) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading order...
+      </div>
+    );
+  }
+
   return (
-    <Skeleton
-      name="track-order-page"
-      loading={isOrderLoading}
-      fallback={<TrackOrderFallback />}
-      fixture={<TrackOrderFallback />}
-      animate="shimmer"
-      transition
-      snapshotConfig={{ excludeSelectors: [".leaflet-container"] }}
-    >
-    {!currentOrder ? <TrackOrderFallback /> : (
     <div className="p-4 space-y-4">
 
       <h2 className="text-xl font-semibold">Track Order</h2>
@@ -134,8 +130,6 @@ const TrackOrderPage = () => {
       })}
 
     </div>
-    )}
-    </Skeleton>
   )
 }
 

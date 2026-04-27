@@ -39,6 +39,7 @@ const OrderPaymentSummary = ({
       const orderId = result.data.orderId
       const razorOrder = result.data.razorOrder
       openRazorpayWindow(orderId,razorOrder)
+      navigate("/order-placed")
      
      }
         

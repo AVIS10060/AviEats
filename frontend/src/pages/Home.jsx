@@ -4,23 +4,15 @@ import UserDashboard from '../components/user/UserDashboard'
 import OwnerDashboard from '../components/OwnerDashboard'
 import DeliveryBoyDashboard from '../components/DeliveryBoyDashboard'
 import Navbar from '../components/NavBar'
-import { Skeleton } from 'boneyard-js/react'
-import { AppShellFallback } from '../components/skeletons'
 
 const Home = () => {
     const {userData, isLoading} = useSelector(state => state.user)
 
     if (isLoading || !userData) {
       return (
-        <Skeleton
-          name="home-loading"
-          loading={true}
-          fallback={<AppShellFallback />}
-          fixture={<AppShellFallback />}
-          animate="shimmer"
-        >
-          <AppShellFallback />
-        </Skeleton>
+        <div className="min-h-screen flex items-center justify-center text-gray-500">
+          Loading...
+        </div>
       )
     }
 

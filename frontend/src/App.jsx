@@ -30,9 +30,6 @@ import useUpdateLocation from "./hooks/useUpdateLocation";
 import TrackOrderPage from "./pages/TrackOrderPage";
 import Shop from "./pages/Shop";
 import { setSocket } from "./redux/userSlice";
-import { Skeleton } from "boneyard-js/react";
-import { AppShellFallback } from "./components/skeletons";
-import GlobalLoader from "./GlobalLoader";
 
 export const serverUrl = "http://localhost:8000";
 
@@ -72,22 +69,14 @@ useEffect(() => {
   // ✅ BLOCK render until auth resolved
   if (isLoading) {
     return (
-      <Skeleton
-        name="app-shell"
-        loading={isLoading}
-        fallback={<AppShellFallback />}
-        fixture={<AppShellFallback />}
-        animate="shimmer"
-      >
-        <AppShellFallback />
-      </Skeleton>
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading...
+      </div>
     );
   }
 
   return (
     <>
-      <GlobalLoader>
-
       <Toaster position="top-right" reverseOrder={false} />
 
       <Routes>
@@ -194,7 +183,6 @@ useEffect(() => {
           />
 
       </Routes>
-          </GlobalLoader>
     </>
   );
 };

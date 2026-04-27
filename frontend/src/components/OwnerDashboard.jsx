@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FaUtensils } from "react-icons/fa";
@@ -6,8 +6,6 @@ import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import toast from "react-hot-toast";
 import { setMyShopData } from "../redux/ownerSlice";
-import { Skeleton } from "boneyard-js/react";
-import { OwnerDashboardFallback } from "./skeletons";
 import api from "../api/axios";
 
 const OwnerDashboard = () => {
@@ -29,20 +27,17 @@ const OwnerDashboard = () => {
 
   
 
+  if (isShopLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading dashboard...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
-      {isShopLoading ? (
-        <Skeleton
-          name="owner-dashboard"
-          loading={true}
-          fallback={<OwnerDashboardFallback />}
-          fixture={<OwnerDashboardFallback />}
-          animate="shimmer"
-          transition
-        >
-          <OwnerDashboardFallback />
-        </Skeleton>
-      ) : !myShopData?._id ? (
+      {!myShopData?._id ? (
         <div className="flex items-center justify-center h-[80vh] px-4">
           <div className="flex flex-col items-center gap-4 text-center">
 

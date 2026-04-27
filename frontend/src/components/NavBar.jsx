@@ -162,7 +162,7 @@ const Navbar = () => {
           </> )
           : 
           (<>
-           <button className="hidden md:block border px-3 py-1 rounded-lg hover:bg-gray-100">
+           <button onClick={()=>navigate("/my-orders")} className="hidden md:block border px-3 py-1 rounded-lg hover:bg-gray-100">
             My Orders
           </button>
           </>)
@@ -198,7 +198,7 @@ const Navbar = () => {
 
                 {/* My Orders for mobile */}
                 {role === "user" && 
-                 <button className="w-full block lg:hidden text-left px-4 py-2 hover:bg-gray-100 text-sm">
+                 <button onClick={()=>navigate('/my-orders')} className="w-full block lg:hidden text-left px-4 py-2 hover:bg-gray-100 text-sm">
                   My Orders
                 </button>
 

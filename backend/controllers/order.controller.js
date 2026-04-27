@@ -311,7 +311,7 @@ export const getMyOrders = async (req, res) => {
 };
 
 export const updateOrderStatus = async (req, res) => {
-  console.log("API HIT", Date.now());
+  console.log("API HIT", "error");
   try {
     const { orderId, shopId } = req.params;
     const { status } = req.body;
@@ -321,9 +321,9 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const shopOrder = order.shopOrders.find(
-      (o) => String(o.shop) === String(shopId),
-    );
+   const shopOrder = order.shopOrders.find(
+  (o) => String(o.shop?._id || o.shop) === String(shopId)
+);
 
     if (!shopOrder) {
       return res.status(400).json({ message: "Shop order not found" });

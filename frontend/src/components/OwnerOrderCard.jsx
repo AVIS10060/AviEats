@@ -107,13 +107,13 @@ const OwnerOrderCard = ({ data }) => {
 
             <select
               className="border px-2 py-1 rounded-md text-sm"
-              onChange={(e) =>
-                handleUpdateStatus(
-                  data._id,
-                  data.shopOrders[0].shop._id,
-                  e.target.value,
-                )
-              }
+             onChange={(e) =>
+  handleUpdateStatus(
+    data._id,
+    shopOrder.shop._id, // ✅ correct
+    e.target.value,
+  )
+}
             >
               <option value="pending">Pending</option>
               <option value="preparing">Preparing</option>
