@@ -4,7 +4,8 @@ import { store } from "../redux/store";
 import { startGlobalLoading, stopGlobalLoading } from "../redux/uiSlice";
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api",
+  // baseURL: "http://localhost:8000/api",
+  baseURL: "https://avieats-backend.onrender.com",
   withCredentials: true,
 });
 
