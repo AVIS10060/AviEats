@@ -5,8 +5,6 @@ import { FaStar } from "react-icons/fa";
 import { FaShoppingCart } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/userSlice";
-import { Skeleton } from "boneyard-js/react";
-import { ShopPageFallback } from "../components/skeletons";
 import api from "../api/axios";
 
 const Shop = () => {
@@ -66,16 +64,15 @@ const Shop = () => {
   const shop = shopData?.shop;
   const items = shopData?.items;
 
+  if (isShopLoading || !shopData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading shop...
+      </div>
+    );
+  }
+
   return (
-    <Skeleton
-      name="shop-page"
-      loading={isShopLoading}
-      fallback={<ShopPageFallback />}
-      fixture={<ShopPageFallback />}
-      animate="shimmer"
-      transition
-    >
-    {!shopData ? <ShopPageFallback /> : (
     <div className="min-h-screen bg-gray-50">
 
       {/* 🔥 SHOP HEADER */}
@@ -180,8 +177,6 @@ const Shop = () => {
         </div>
       </div>
     </div>
-    )}
-    </Skeleton>
   );
 };
 
