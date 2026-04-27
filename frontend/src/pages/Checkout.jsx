@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import axios from "axios";
-import "leaflet/dist/leaflet.css";
-import { setAddress, setLocation } from "../redux/mapSlice";
-import { useRef } from "react";
-import OrderPaymentSummary from "../components/user/OrderPaymentSummary";
-import { serverUrl } from "../App";
+import React, { useState, useEffect, useRef } from "react"
+import { useNavigate } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet"
+import axios from "axios"
+import "leaflet/dist/leaflet.css"
+import { setLocation } from "../redux/mapSlice"
+import OrderPaymentSummary from "../components/user/OrderPaymentSummary"
+import { Skeleton } from "boneyard-js/react"
+import { CheckoutFallback } from "../components/skeletons"
+import toast from "react-hot-toast"
 
 
 
@@ -31,11 +32,11 @@ const Checkout = () => {
   const dispatch = useDispatch();
   
 const latestRequest = useRef(0);
-const isFirstLoad = useRef(true);
 const isUserTyping = useRef(false);
 
 
   const { location, address } = useSelector((state) => state.map);
+  const { userData } = useSelector((state) => state.user);
 
   const [search, setSearch] = useState(address || "");
 
@@ -43,19 +44,19 @@ const isUserTyping = useRef(false);
 
   // 🔁 Sync Redux address → input
   useEffect(() => {
+    const syncSearchInput = () => {
+      if (!isUserTyping.current) {
+        setSearch(address || "")
+      }
+    }
 
-  // only update search if user is NOT typing
-  if (!isUserTyping.current) {
-    setSearch(address || "");
-  }
-
-}, [address]);
+    syncSearchInput()
+  }, [address])
 
   const getCurrentLocation = () =>{
-      navigator.geolocation.getCurrentPosition(async (position) => {
-      console.log(position);
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
+      
+      const latitude = userData.location.coordinates[1];
+      const longitude = userData.location.coordinates[0];
       dispatch(setLocation({
         lat:latitude,
         lon: longitude,
@@ -66,7 +67,7 @@ const isUserTyping = useRef(false);
 
       // ❗ prevent debounce from triggering
       isUserTyping.current = false;
-    });
+    
          
   }
 
@@ -94,19 +95,53 @@ const isUserTyping = useRef(false);
 
       setSearch(newAddress || "");
     } catch (error) {
-      console.log(error);
+      console.error(error)
+      toast.error(error.response?.data?.message || 'Failed to fetch address for location')
     }
   };
 
   
 
   // ⌨️ Enter key support
+  const handleSearch = async () => {
+    if (!search || search.trim().length < 3) {
+      toast.error('Type at least 3 characters to search')
+      return
+    }
+
+    try {
+      const res = await axios.get(
+        `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(search)}&apiKey=${apiKey}`,
+      )
+
+      const result = res?.data?.features?.[0]?.properties
+      if (!result) {
+        toast.error('No address found for that search')
+        return
+      }
+
+      dispatch(
+        setLocation({
+          lat: result.lat,
+          lon: result.lon,
+          address: result.address_line2 || result.formatted,
+        }),
+      )
+      setSearch(result.address_line2 || result.formatted)
+      isUserTyping.current = false
+    } catch (error) {
+      console.error(error)
+      toast.error(error.response?.data?.message || 'Address search failed')
+    }
+  }
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      handleSearch();
+      handleSearch()
     }
-  };
-useEffect(() => {
+  }
+
+  useEffect(() => {
 
   // ❌ only run if user actually typed
   if (!isUserTyping.current) return;
@@ -135,23 +170,34 @@ useEffect(() => {
       }));
 
     } catch (error) {
-      console.log(error);
+      console.error(error)
+      toast.error(error.response?.data?.message || 'Address search failed')
     }
 
   }, 600);
 
   return () => clearTimeout(delay);
 
-}, [search]);
+}, [search, dispatch, apiKey]);
 
   // Safety check
   if (!location?.lat || !location?.lon) {
-    return <div className="p-10 text-center">Loading Map...</div>;
+    return (
+      <Skeleton
+        name="checkout-page"
+        loading
+        fallback={<CheckoutFallback />}
+        fixture={<CheckoutFallback />}
+        animate="shimmer"
+        snapshotConfig={{ excludeSelectors: [".leaflet-container"] }}
+      >
+        <CheckoutFallback />
+      </Skeleton>
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
-
       {/* Header */}
       <div className="relative mb-6">
 
@@ -183,14 +229,19 @@ useEffect(() => {
           className="w-full p-3 border rounded-lg"
         />
 
-        {/* <button
+        <button
+          type="button"
           onClick={handleSearch}
           className="bg-orange-500 text-white px-4 rounded-lg"
         >
           Search
-        </button> */}
-        <button onClick={getCurrentLocation}>
-            Location
+        </button>
+        <button
+          type="button"
+          onClick={getCurrentLocation}
+          className="bg-gray-200 text-gray-700 px-4 rounded-lg"
+        >
+          Use current location
         </button>
 
       </div>

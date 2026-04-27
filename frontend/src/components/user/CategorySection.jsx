@@ -49,7 +49,7 @@ const CategorySection = () => {
         >
 
           {categories.map((data, index) => (
-            <CategoryCard key={index} data={data} />
+            <CategoryCard key={index} data={data} onClick />
           ))}
 
         </div>

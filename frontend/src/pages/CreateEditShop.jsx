@@ -3,9 +3,8 @@ import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { FaUtensils } from "react-icons/fa"
 import toast from "react-hot-toast"
-import axios from "axios"
-import { serverUrl } from "../App"
 import { setMyShopData } from "../redux/ownerSlice"
+import api from "../api/axios"
 
 const CreateEditShop = () => {
 
@@ -27,14 +26,18 @@ const CreateEditShop = () => {
 
   // Sync Redux data to form
   useEffect(() => {
-    setFormData({
-      name: myShopData?.name || "",
-      address: myShopData?.address || currentAddress || "",
-      city: myShopData?.city || currentCity || "",
-      state: myShopData?.state || currentState || ""
-    })
+    const syncForm = () => {
+      setFormData({
+        name: myShopData?.name || "",
+        address: myShopData?.address || currentAddress || "",
+        city: myShopData?.city || currentCity || "",
+        state: myShopData?.state || currentState || "",
+      })
 
-    setFrontendImage(myShopData?.image || null)
+      setFrontendImage(myShopData?.image || null)
+    }
+
+    syncForm()
   }, [myShopData, currentCity, currentState, currentAddress])
 
   const handleChange = (e) => {
@@ -70,12 +73,8 @@ const CreateEditShop = () => {
       if (backendImage) {
         data.append("image", backendImage)
       }
-
-
-      const res = await axios.post(`${serverUrl}/api/shop/create-edit`, data, {
-       withCredentials:true
-      })
-      dispatch(setMyShopData(res.data))
+      const res = await api.post("/shop/create-edit", data)
+      dispatch(setMyShopData(res.data.shop))
       console.log(res)
 
       toast.success(res.data.message || "Shop saved successfully")

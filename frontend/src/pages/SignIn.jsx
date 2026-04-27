@@ -1,14 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { serverUrl } from "../App.jsx";
 import toast from "react-hot-toast";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../firebase.js";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../redux/userSlice.js";
+import api from "../api/axios";
 
 
 const SignIn = () => {
@@ -21,6 +20,7 @@ const SignIn = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [signinLoading, setSigninLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -42,16 +42,14 @@ const SignIn = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post(
-        `${serverUrl}/api/auth/signin`,
-        formData,
-        { withCredentials: true }
-      );
+      const response = await api.post("/auth/signin", formData);
 
-       dispatch(setUserData(data))
+      // Fetch full user data after signin
+      const userResponse = await api.get("/user/current");
 
-      // Optional: Navigate after success
-      // navigate("/dashboard");
+      dispatch(setUserData(userResponse.data))
+
+      setSigninLoading(true);
 
       // Reset form
       setFormData({
@@ -67,19 +65,30 @@ const SignIn = () => {
     }
   };
 
+  useEffect(() => {
+    if (signinLoading) {
+      const timer = setTimeout(() => {
+        navigate("/");
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [signinLoading, navigate]);
+
   const handleGoogleAuth = async () =>{
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);    
       console.log(result)
       try {
-        const {data} = await axios.post(`${serverUrl}/api/auth/google-auth`,{
+        await api.post("/auth/google-auth",{
           email:result.user.email,
-        },
-      {withCredentials:true})
+        })
       
-       dispatch(setUserData(data))
+       // Fetch full user data after google auth
+       const userResponse = await api.get("/user/current");
+
+       dispatch(setUserData(userResponse.data))
+       setSigninLoading(true);
        toast.success("Signed in successfully!");
-        navigate("/"); // This should now trigger correctly
         
       } catch (error) {
         toast.error(error.response?.data?.message || "Signin failed");
@@ -97,98 +106,115 @@ const SignIn = () => {
         <h2 className="text-2xl font-bold text-center mb-6">AviEats</h2>
         <h3 className="mb-4">Sign in to your account</h3>
 
-        <form className="space-y-5" onSubmit={handleSignIn}>
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+        {signinLoading ? (
+          <div className="text-center space-y-4">
+            <div className="text-green-600 text-lg font-semibold">
+              Sign in successful!
+            </div>
+            <div className="text-gray-600">
+              Loading your dashboard...
+            </div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
           </div>
-
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Password
-            </label>
-            <div className="relative">
+        ) : (
+          <form className="space-y-5" onSubmit={handleSignIn}>
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Email
+              </label>
               <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Enter your password"
+                type="email"
+                name="email"
+                placeholder="Enter your email"
                 className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2"
-                value={formData.password}
+                value={formData.email}
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Enter your password"
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-2.5 text-black"
+                  disabled={loading}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+
+            <div className="text-right mb-4 text-xl">
+              <button onClick={() => navigate("/forgot-password")} disabled={loading}>
+                forgot password 
+              </button>
+
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full text-white font-semibold py-2 rounded-lg transition duration-200 disabled:opacity-60"
+              style={{ backgroundColor: primaryColor }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = hoverColor)
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = primaryColor)
+              }
+            >
+              {loading ? "Signing In..." : "Sign In"}
+            </button>
+
+            {/* Google Sign In */}
+            <div className="mt-4">
               <button
+                onClick={handleGoogleAuth}
                 type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-2.5 text-black"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-3 border rounded-lg py-2 font-medium transition duration-200 hover:shadow-md disabled:opacity-60"
               >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                <FcGoogle size={22} />
+                <span>Sign in with Google</span>
               </button>
             </div>
-          </div>
 
-          <div className="text-right mb-4 text-xl">
-            <button onClick={() => navigate("/forgot-password")}>
-              forgot password 
-            </button>
-
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full text-white font-semibold py-2 rounded-lg transition duration-200 disabled:opacity-60"
-            style={{ backgroundColor: primaryColor }}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor = hoverColor)
-            }
-            onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor = primaryColor)
-            }
-          >
-            {loading ? "Signing In..." : "Sign In"}
-          </button>
-
-          {/* Google Sign In */}
-          <div className="mt-4">
+            {/* Footer */}
             <button
-              onClick={handleGoogleAuth}
               type="button"
-              className="w-full flex items-center justify-center gap-3 border rounded-lg py-2 font-medium transition duration-200 hover:shadow-md"
+              className="text-sm text-center text-gray-500 mt-4 w-full"
+              disabled={loading}
             >
-              <FcGoogle size={22} />
-              <span>Sign in with Google</span>
+              Don’t have an account?{" "}
+              <span
+                style={{ color: primaryColor }}
+                onClick={() => navigate("/signup")}
+                className="font-medium cursor-pointer"
+              >
+                Sign Up
+              </span>
             </button>
-          </div>
-
-          {/* Footer */}
-          <button
-            type="button"
-            className="text-sm text-center text-gray-500 mt-4 w-full"
-          >
-            Don’t have an account?{" "}
-            <span
-              style={{ color: primaryColor }}
-              onClick={() => navigate("/signup")}
-              className="font-medium cursor-pointer"
-            >
-              Sign Up
-            </span>
-          </button>
-        </form>
+          </form>
+        )}
       </div>
     </div>
   );

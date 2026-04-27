@@ -90,14 +90,10 @@ export const getMyShop = async (req, res) => {
       { path: "items", options: { sort: { updatedAt: -1 } } }
     ]);
 
-    if (!shop) {
-      return res.status(404).json({
-        success: false,
-        message: "Shop not found"
-      });
-    }
-
-    return res.status(200).json(shop);
+    return res.status(200).json({
+      success: true,
+      shop: shop || null
+    });
 
   } catch (error) {
     return res.status(500).json({

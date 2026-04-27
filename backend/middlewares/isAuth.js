@@ -6,7 +6,7 @@ const isAuth = async (req,res,next) =>{
         const token = req.cookies.token
         
         if(!token){
-            return sendResponse(res,400,"token not found")
+            return sendResponse(res,400,"signin failed no user found")
         }
         const decodeToken = JWT.verify(token,process.env.JWT_SECRET)
         // console.log(decodeToken)

@@ -4,6 +4,7 @@ const ownerSlice = createSlice({
     name: "owner",
     initialState:{
         myShopData:null,
+        isShopLoading:false,
         
     },
     reducers:{
@@ -11,11 +12,15 @@ const ownerSlice = createSlice({
         state.myShopData = action.payload
 
         },
+        setShopLoading: (state, action) => {
+        state.isShopLoading = action.payload
+
+        },
      
     }
 })
 
-export const  {setMyShopData}= ownerSlice.actions
+export const  {setMyShopData, setShopLoading}= ownerSlice.actions
 export const  {setCity}= ownerSlice.actions
 
 export default ownerSlice.reducer

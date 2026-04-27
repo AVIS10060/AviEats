@@ -1,33 +1,33 @@
-import axios from 'axios'
 import React, { useEffect } from 'react'
-import { serverUrl } from '../App'
 import toast from 'react-hot-toast'
-import { setShopsInMyCity, setUserData } from '../redux/userSlice'
+import { setShopsInMyCity, setShopsLoading } from '../redux/userSlice'
 import { useDispatch, useSelector } from 'react-redux'
+import api from '../api/axios'
 
 
 const useGetShopByCity = () => {
     const dispatch = useDispatch()
     const {currentCity} = useSelector(state => state.user)
+     
+    
+    useEffect(() => {
+        if (!currentCity) return; 
 
-    useEffect(()=>{
-
-        const fetchShops = async() =>{
+        const fetchShops = async () => {
+            dispatch(setShopsLoading(true))
 
             try {
-                const response = await axios.get(`${serverUrl}/api/shop/get-by-city/${currentCity}`,{withCredentials:true})
-                 dispatch(setShopsInMyCity(response.data))
-                 console.log(response.data)
-                
+                const response = await api.get(`/shop/get-by-city/${currentCity}`)
+                dispatch(setShopsInMyCity(response.data))
             } catch (error) {
                 toast.error(error.response?.data?.message || error.message)
-                
+            } finally {
+                dispatch(setShopsLoading(false))
             }
-
         }
-        fetchShops()
 
-    },[currentCity])
+        fetchShops()
+    }, [currentCity, dispatch])
 }
 
 export default useGetShopByCity

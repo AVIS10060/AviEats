@@ -1,15 +1,13 @@
-import axios from "axios";
 import React, { useState } from "react";
-import { serverUrl } from "../App";
 import { useDispatch } from "react-redux";
-import { setMyShopData } from "../redux/ownerSlice";
+import toast from "react-hot-toast";
 import { updateOrderStatus } from "../redux/userSlice";
+import api from "../api/axios";
 
 const OwnerOrderCard = ({ data }) => {
   const [availableBoys, setAvailableBoys] = useState([]);
   const dispatch = useDispatch();
-  console.log(data.shopOrders[0].status);
-
+ 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-GB", {
@@ -23,18 +21,16 @@ const OwnerOrderCard = ({ data }) => {
 
   const handleUpdateStatus = async (orderId, shopId, status) => {
     try {
-      const result = await axios.post(
-        `${serverUrl}/api/order/update-status/${orderId}/${shopId}`,
+      const result = await api.post(
+        `/order/update-status/${orderId}/${shopId}`,
         { status },
-        {
-          withCredentials: true,
-        },
       );
       dispatch(updateOrderStatus({ orderId, shopId, status }));
       setAvailableBoys(result.data.availableBoys);
       console.log("API RESPONSE:", result.data.availableBoys);
     } catch (error) {
-      console.log(error);
+      console.error(error)
+      toast.error(error.response?.data?.message || 'Unable to update order status')
     }
   };
 
@@ -60,6 +56,13 @@ const OwnerOrderCard = ({ data }) => {
         <p className="font-medium text-gray-800">{data.user?.name || "User"}</p>
         <p className="text-sm text-gray-600">{data.user?.email}</p>
         <p className="text-sm text-gray-600">📞 {data.user?.mobile}</p>
+
+        {data.paymentMethod === "online" ? (
+          <p>Payment: {data.payment ? "Paid" : "Failed"}</p>
+        ) : (
+          <p className="text-sm text-gray-600">Payment Method: {data.paymentMethod}</p>
+        )}
+        
       </div>
 
       {/* 🔹 Address */}

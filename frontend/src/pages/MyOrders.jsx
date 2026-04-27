@@ -1,19 +1,71 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useGetMyOrders from "../hooks/useGetMyOrders";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import UserOrderCard from "../components/user/UserOrderCard";
 import OwnerOrderCard from "../components/OwnerOrderCard";
+import { setMyOrders, updateRealTimeOrderStatus } from "../redux/userSlice";
+import { Skeleton } from "boneyard-js/react";
+import { OrderListFallback } from "../components/skeletons";
 
 const MyOrders = () => {
   useGetMyOrders();
 
   const navigate = useNavigate();
-  const { userData, myOrders } = useSelector((state) => state.user);
+  const { userData, myOrders, socket, isOrdersLoading } = useSelector((state) => state.user);
+  const dispatch = useDispatch()
+
+useEffect(() => {
+  if (!socket) return;
+
+  const newOrderHandler = (data) => {
+    console.log("🔥 EVENT RECEIVED:", data);
+
+    if (
+      String(data?.shopOrders?.[0]?.owner?._id) ===
+      String(userData?._id)
+    ) {
+      dispatch(
+        setMyOrders((prev) => {
+          const exists = prev.find((o) => o._id === data._id);
+          if (exists) return prev;
+          return [data, ...prev];
+        })
+      );
+    }
+  };
+
+const updateStatusHandler = ({ orderId, shopId, userId, status }) => {
+    console.log("🔥 STATUS EVENT:", { orderId, shopId, userId, status });
+
+    if (String(userId) === String(userData?._id)) {
+      dispatch(updateRealTimeOrderStatus({ orderId, shopId, status }));
+    }
+  };
+
+
+  socket?.on("newOrder", newOrderHandler);
+  socket?.on("update-status", updateStatusHandler);
+
+
+  return () => {socket.off("newOrder", newOrderHandler)
+    socket.off("update-status", updateStatusHandler)
+
+  }
+
+}, [dispatch, socket, userData]);
+
 
   return (
+    <Skeleton
+      name="my-orders-page"
+      loading={isOrdersLoading}
+      fallback={<OrderListFallback role={userData?.role} />}
+      fixture={<OrderListFallback role={userData?.role} />}
+      animate="shimmer"
+      transition
+    >
     <div className="min-h-screen bg-gray-100 px-4 py-6">
-
       {/* 🔹 Header */}
       <div className="max-w-3xl mx-auto mb-6 relative">
         <button
@@ -30,11 +82,8 @@ const MyOrders = () => {
 
       {/* 🔹 Orders List */}
       <div className="max-w-3xl mx-auto">
-
         {!myOrders || myOrders.length === 0 ? (
-          <div className="text-center text-gray-500 mt-10">
-            No orders found
-          </div>
+          <div className="text-center text-gray-500 mt-10">No orders found</div>
         ) : (
           myOrders.map((order, index) => {
             if (userData?.role === "user") {
@@ -48,9 +97,9 @@ const MyOrders = () => {
             return null;
           })
         )}
-
       </div>
     </div>
+    </Skeleton>
   );
 };
 

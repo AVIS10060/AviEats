@@ -2,17 +2,14 @@ import React, { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { FaUtensils } from "react-icons/fa"
 import toast from "react-hot-toast"
-import axios from "axios"
-import { serverUrl } from "../App"
 import { setMyShopData } from "../redux/ownerSlice"
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
+import api from "../api/axios"
 
 const EditItem = () => {
-    const {MyShopData} = useSelector(state => state.owner)
-  const dispatch = useDispatch()
-  const {itemId} = useParams()
-  console.log(itemId)
-  const [loading,setLoading] = useState(false)
+    const dispatch = useDispatch()
+  const { itemId } = useParams()
+  const [loading, setLoading] = useState(false)
 
   const navigate = useNavigate()
   const [currentItem,setCurrentItem] = useState(null)
@@ -29,26 +26,21 @@ const EditItem = () => {
   const [backendImage, setBackendImage] = useState(null)
 
  useEffect(() => {
+    const fetchItem = async () => {
+      try {
+        const res = await api.get(`/item/get-by-id/${itemId}`)
 
-  const fetchItem = async () => {
-    try {
-
-      const res = await axios.get(
-        `${serverUrl}/api/item/get-by-id/${itemId}`,
-        { withCredentials: true }
-      )
-
-      setCurrentItem(res.data)
-      console.log(res,"this is response")
-
-    } catch (error) {
-      console.log(error)
+        setCurrentItem(res.data)
+      } catch (error) {
+        console.error(error)
+        toast.error(error.response?.data?.message || 'Unable to load item details')
+      }
     }
-  }
 
-  fetchItem()
-
-}, [``])
+    if (itemId) {
+      fetchItem()
+    }
+  }, [itemId])
 
  useEffect(() => {
 
@@ -118,11 +110,7 @@ const EditItem = () => {
         data.append("image", backendImage)
       }
 
-      const res = await axios.post(
-        `${serverUrl}/api/item/edit-item/${itemId}`,
-        data,
-        { withCredentials: true }
-      )
+      const res = await api.post(`/item/edit-item/${itemId}`, data)
       dispatch(setMyShopData(res.data))
       console.log(res.data)
 

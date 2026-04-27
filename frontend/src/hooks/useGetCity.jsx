@@ -14,26 +14,33 @@ const useGetCity = () => {
   const { userData } = useSelector((state) => state.user);
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      console.log(position);
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
-      dispatch(setLocation({ lat: latitude, lon: longitude }));
-      try {
-        const response = await axios.get(
-          `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&format=json&apiKey=${apikey}`,
-        );
-        dispatch(setCurrentCity(response?.data?.results[0].city));
-        dispatch(setCurrentState(response?.data?.results[0].state));
-        dispatch(setCurrentAddress(response?.data?.results[0].address_line1));
-        dispatch(setAddress(response?.data?.results[0].address_line2));
-      } catch (error) {
-        console.log(error);
-      }
-    });
-  }, [userData]);
+    if (!navigator.geolocation) return
 
-  return <div></div>;
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        dispatch(setLocation({ lat: latitude, lon: longitude }));
+
+        try {
+          const response = await axios.get(
+            `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&format=json&apiKey=${apikey}`,
+          )
+          dispatch(setCurrentCity(response?.data?.results?.[0]?.city))
+          dispatch(setCurrentState(response?.data?.results?.[0]?.state))
+          dispatch(setCurrentAddress(response?.data?.results?.[0]?.address_line1))
+          dispatch(setAddress(response?.data?.results?.[0]?.address_line2))
+        } catch (error) {
+          console.error(error)
+        }
+      },
+      (error) => {
+        console.error(error)
+      },
+    )
+  }, [userData, apikey, dispatch])
+
+  return null
 };
 
 export default useGetCity;

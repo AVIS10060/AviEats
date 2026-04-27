@@ -1,39 +1,68 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaMapMarkerAlt, FaShoppingCart, FaSearch } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { serverUrl } from "../App";
-import { setUserData } from "../redux/userSlice";
+import { setSearchItems, setUserData } from "../redux/userSlice";
 import { FaPlus } from "react-icons/fa6";
-import axios from "axios";
 import { FaReceipt } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import api from "../api/axios";
 
-const Navbar = ({ user }) => {
+const Navbar = () => {
+
+ 
+
+
+
+
   const navigate = useNavigate()
 
   const [showSearch, setShowSearch] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const {currentCity,userData,cartItems} = useSelector(state=>state.user)
-  const {myShopData} = useSelector(state=>state.owner)
+  const { currentCity, userData, cartItems, isLoading } = useSelector((state) => state.user)
+  const { myShopData } = useSelector((state) => state.owner)
   const dispatch = useDispatch()
-  let role = userData.role
+  const [query, setQuery] = useState("")
+  const role = userData?.role || "user"
 
-  const handleLogout = async ()=>{
+  const handleLogout = async () => {
     try {
-      const response = await axios.get(`${serverUrl}/api/auth/signout`,{withCredentials:true})
+      await api.get("/auth/signout")
       dispatch(setUserData(null))
-      
+      toast.success('Signed out successfully')
     } catch (error) {
-      console.log(error)
-      
+      console.error(error)
+      toast.error(error.response?.data?.message || 'Sign out failed')
     }
-
   }
 
-  const cartCount = 0;
+  const userInitial = userData?.fullName?.charAt(0).toUpperCase()
 
-  const userInitial = userData?.fullName
-    && userData.fullName.charAt(0).toUpperCase()
+
+    const handleSearchItems = React.useCallback(
+    async (query) => {
+      try {
+        const { data } = await api.get(
+          `/item/search-items?query=${encodeURIComponent(query)}&city=${currentCity}`,
+          { skipGlobalLoading: true },
+        )
+
+        dispatch(setSearchItems(data))
+      } catch (error) {
+        console.error(error)
+        toast.error(error.response?.data?.message || 'Search failed')
+      }
+    },
+    [currentCity, dispatch],
+  )
+
+  useEffect(() => {
+    if (query) {
+      handleSearchItems(query)
+    } else {
+      dispatch(setSearchItems(null))
+    }
+  }, [query, dispatch, handleSearchItems])
 
   return (
     <>
@@ -61,6 +90,8 @@ const Navbar = ({ user }) => {
           {role=== "user" && 
           <div className="relative">
             <input
+              onChange={(e)=>setQuery(e.target.value)}
+              value={query}
               type="text"
               placeholder="Search for dishes"
               className="border rounded-lg px-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-orange-400"
@@ -97,8 +128,8 @@ const Navbar = ({ user }) => {
 
             <FaShoppingCart />
 
-            <span onClick={()=>navigate("/cart")} className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-1.5 rounded-full">
-              {cartItems.length}
+            <span onClick={() => navigate("/cart")} className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-1.5 rounded-full">
+              {cartItems?.length || 0}
             </span>
 
           </div>}
@@ -148,8 +179,13 @@ const Navbar = ({ user }) => {
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="w-9 h-9 bg-orange-500 text-white rounded-full flex items-center justify-center font-semibold"
+              disabled={isLoading || !userData}
             >
-              {userInitial}
+              {isLoading || !userData ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                userInitial
+              )}
             </button>
 
             {/* USER DROPDOWN */}

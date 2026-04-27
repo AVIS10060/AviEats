@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import DeliveryBoyTracking from '../components/DeliveryBoyTracking'
 import { useSelector } from 'react-redux'
 import { Skeleton } from 'boneyard-js/react'
-import { TrackOrderFallback } from '../components/skeletons'
+import { TrackOrderFallback } from '../components/BoneyardFallbacks'
 import api from '../api/axios'
 
 const TrackOrderPage = () => {

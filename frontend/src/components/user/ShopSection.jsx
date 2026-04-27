@@ -1,12 +1,15 @@
 import React, { useRef } from "react";
 import { useSelector } from "react-redux";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { Skeleton } from "boneyard-js/react";
+import { ShopSectionFallback } from "../skeletons";
 
 const ShopSection = () => {
 
-  const { currentCity, shopsInMyCity } = useSelector(state => state.user)
-  console.log(currentCity,"this is current city")
-  console.log(shopsInMyCity,"this is shop city")
+  const { currentCity, shopsInMyCity, isShopsLoading } = useSelector(state => state.user)
+  const navigate = useNavigate()
+  const isLoading = !currentCity || isShopsLoading
 
 
   const scrollRef = useRef(null)
@@ -32,6 +35,14 @@ const ShopSection = () => {
   }
 
   return (
+    <Skeleton
+      name="shop-section"
+      loading={isLoading}
+      fallback={<ShopSectionFallback />}
+      fixture={<ShopSectionFallback />}
+      animate="shimmer"
+      transition
+    >
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       <h1 className="text-2xl sm:text-3xl font-semibold mb-6">
@@ -55,6 +66,8 @@ const ShopSection = () => {
           {shopsInMyCity && shopsInMyCity.map((shop) => (
 
             <div
+              onClick={()=>navigate(`/shop/${shop._id}`)}
+
               key={shop._id}
               className="min-w-[220px] bg-white rounded-xl shadow-md hover:shadow-lg transition overflow-hidden cursor-pointer"
             >
@@ -93,6 +106,7 @@ const ShopSection = () => {
       </div>
 
     </div>
+    </Skeleton>
   );
 };
 

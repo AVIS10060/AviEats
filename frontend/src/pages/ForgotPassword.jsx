@@ -1,15 +1,12 @@
 import React, { useState } from 'react'
 import { FaArrowLeft } from "react-icons/fa6";
 import { useNavigate } from 'react-router-dom';
-import { serverUrl } from '../App';
 import toast from "react-hot-toast";
-import axios from 'axios';
+import api from '../api/axios';
 
 
   const primaryColor = "#ff4d2d";
-  const hoverColor = "#e64323";
-  const bgColor = "#fff9f6";
-
+const hoverColor = "#e64323";
 
 const ForgotPassword = () => {
 
@@ -23,46 +20,45 @@ const ForgotPassword = () => {
 
     const handleSendOtp = async() =>{
         try {
-            const response = await axios.post(`${serverUrl}/api/auth/send-otp`,{
+            const response = await api.post('/auth/send-otp',{
                 email
-            },{ withCredentials: true })
+            })
             console.log(response)
             setStep(2)
-            toast.success("otp sent")
-            
+            toast.success("OTP sent")
         } catch (error) {
-            console.log(error)
-            
+            console.error(error)
+            toast.error(error.response?.data?.message || 'Unable to send OTP')
         }
     }
     const handleVerifyOtp = async() =>{
         try {
-            const response = await axios.post(`${serverUrl}/api/auth/verify-otp`,{
+            const response = await api.post('/auth/verify-otp',{
                 email,otp
-            },{ withCredentials: true })
+            })
             console.log(response)
             setStep(3)
             toast.success(response.data.message)
-            
         } catch (error) {
-            console.log(error)
-            
+            console.error(error)
+            toast.error(error.response?.data?.message || 'OTP verification failed')
         }
     }
     const handleResetPassword = async() =>{
-        if(newPassword !== confirmPassword){
-            return console.log("password are not same")
+        if (newPassword !== confirmPassword) {
+            toast.error('Passwords do not match')
+            return
         }
         try {
-            const response = await axios.post(`${serverUrl}/api/auth/reset-password`,{
+            const response = await api.post('/auth/reset-password',{
                 email,newPassword,confirmPassword
-            },{ withCredentials: true })
+            })
             console.log(response)
             toast.success(response.data.message)
             navigate("/signin")
         } catch (error) {
-            console.log(error)
-            
+            console.error(error)
+            toast.error(error.response?.data?.message || 'Password reset failed')
         }
     }
 
