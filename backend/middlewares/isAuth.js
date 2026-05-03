@@ -25,4 +25,6 @@ const isAuth = async (req,res,next) =>{
     
 }
 
+// this is auth 
+
 export default isAuth
