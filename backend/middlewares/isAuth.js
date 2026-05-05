@@ -28,5 +28,6 @@ const isAuth = async (req,res,next) =>{
 // this is auth 
 
 // this is 1st comment 
+// this is second commit 
 
 export default isAuth
