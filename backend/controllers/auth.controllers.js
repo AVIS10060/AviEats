@@ -4,6 +4,9 @@ import genToken from "../utils/token.js";
 import { sendOtpMail } from "../utils/mail.js";
 import { sendResponse } from "../utils/response.js";
 
+
+// this is a comment 
+
 // ================= SIGN UP =================
 export const signUp = async (req, res)=>{
   try {
@@ -185,7 +188,7 @@ export const googleAuth = async (req,res) =>{
 
         const token = await genToken(user._id)
         res.cookie("token",token,{
-             secure: true,
+      secure: true,
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
