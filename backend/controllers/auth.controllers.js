@@ -7,6 +7,7 @@ import { sendResponse } from "../utils/response.js";
 
 // this is a comment 
 // this is 2nd comment
+// this is 3rd comment 
 
 // ================= SIGN UP =================
 export const signUp = async (req, res)=>{
