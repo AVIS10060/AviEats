@@ -6,9 +6,9 @@ import api from '../api/axios'
 
 
 const DeliveryBoyDashboard = () => {
-  const [otp,setOtp] = useState(null)
+  // const [otp,setOtp] = useState(null)
   const { userData ,socket} = useSelector(state => state.user)
-  const [showOtpBox ,setShowOtpBox] = useState(false)
+  // const [showOtpBox ,setShowOtpBox] = useState(false)
   const [deliveryBoyLoca,setDeliveryBoyLocation] = useState(null)
   const [isDashboardLoading, setIsDashboardLoading] = useState(true)
 
@@ -101,31 +101,51 @@ const DeliveryBoyDashboard = () => {
    console.log(currentOrder)
 
 
- const sendOtp = async (orderId, shopOrderId) => {
-    try {
-      await api.post(
-        '/order/send-delivery-otp',
-        { orderId, shopOrderId },
-      )
-      setShowOtpBox(true)
-    } catch (error) {
-      console.error(error)
-      toast.error(error.response?.data?.message || 'Unable to send OTP')
-    }
-  }
-  const verifyOtp = async (orderId, shopOrderId, otp) => {
-    try {
-      await api.post(
-        '/order/verify-delivery-otp',
-        { orderId, shopOrderId, otp },
-      )
-      toast.success('OTP verified successfully')
-    } catch (error) {
-      console.error(error)
-      toast.error(error.response?.data?.message || 'OTP verification failed')
-    }
-  }
+//  const sendOtp = async (orderId, shopOrderId) => {
+//     try {
+//       await api.post(
+//         '/order/send-delivery-otp',
+//         { orderId, shopOrderId },
+//       )
+//       setShowOtpBox(true)
+//     } catch (error) {
+//       console.error(error)
+//       toast.error(error.response?.data?.message || 'Unable to send OTP')
+//     }
+//   }
+//   const verifyOtp = async (orderId, shopOrderId, otp) => {
+//     try {
+//       await api.post(
+//         '/order/verify-delivery-otp',
+//         { orderId, shopOrderId, otp },
+//       )
+//       toast.success('OTP verified successfully')
+//     } catch (error) {
+//       console.error(error)
+//       toast.error(error.response?.data?.message || 'OTP verification failed')
+//     }
+//   }
 
+
+
+  const markAsDelivered = async (orderId, shopOrderId) => {
+  try {
+    await api.post('/order/mark-delivered', {
+  orderId,
+  shopOrderId,
+})
+
+    toast.success('Order delivered successfully')
+
+    await getCurrentOrder()
+  } catch (error) {
+    console.error(error)
+    toast.error(
+      error.response?.data?.message ||
+      'Unable to mark order delivered'
+    )
+  }
+}
   // console.log(currentOrder?.shoporder?._id)
 
 
@@ -204,7 +224,7 @@ const DeliveryBoyDashboard = () => {
                       }
           }}></DeliveryBoyTracking>
 
-       {!showOtpBox ? (
+       {/* {!showOtpBox ? (
   <button
     onClick={() =>
       sendOtp(currentOrder?._id, currentOrder?.shoporder?._id)
@@ -245,8 +265,18 @@ const DeliveryBoyDashboard = () => {
     </button>
 
   </div>
-)}
-
+)} */}
+<button
+  onClick={() =>
+    markAsDelivered(
+      currentOrder?._id,
+      currentOrder?.shoporder?._id
+    )
+  }
+  className="mt-4 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition"
+>
+  Mark as Delivered
+</button>
           
 
 
