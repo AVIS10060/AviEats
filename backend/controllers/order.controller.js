@@ -671,63 +671,110 @@ export const getOrderById = async (req, res) => {
 export const sendDeliveryOtp = async (req, res) => {
   try {
     const { orderId, shopOrderId } = req.body;
+
+    if (!orderId || !shopOrderId) {
+      return sendResponse(res, 400, "orderId and shopOrderId are required");
+    }
+
     const order = await Order.findById(orderId).populate("user");
+
+    if (!order) {
+      return sendResponse(res, 404, "Order not found");
+    }
 
     const shopOrder = order.shopOrders.id(shopOrderId);
 
-    if (!order || !shopOrder) {
-      return sendResponse(res, 400, "enter valid order");
+    if (!shopOrder) {
+      return sendResponse(res, 404, "Shop order not found");
     }
 
-    const otp = Math.floor(1000 + Math.random() * 900000).toString();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     shopOrder.deliveryOtp = otp;
-    shopOrder.otpExpires = Date.now() + 5 * 60 * 1000;
+    shopOrder.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+
     await order.save();
 
+    // Send email after successful save
     await sendDeliveryOtpMail(order.user, otp);
 
     return sendResponse(
       res,
       200,
-      `otp sent successfully to ${order.user?.fullName}`,
+      `OTP sent successfully to ${order.user?.fullName || "user"}`
     );
   } catch (error) {
-    return sendResponse(res, 500, "internal server error");
+    console.error("sendDeliveryOtp error:", error);
+
+    return sendResponse(
+      res,
+      500,
+      error.message || "Internal server error"
+    );
   }
 };
 
 export const verifyDeliveryOtp = async (req, res) => {
   try {
     const { orderId, shopOrderId, otp } = req.body;
+
+    if (!orderId || !shopOrderId || !otp) {
+      return sendResponse(
+        res,
+        400,
+        "orderId, shopOrderId and otp are required"
+      );
+    }
+
     const order = await Order.findById(orderId).populate("user");
+
+    if (!order) {
+      return sendResponse(res, 404, "Order not found");
+    }
 
     const shopOrder = order.shopOrders.id(shopOrderId);
 
-    if (!order || !shopOrder) {
-      return sendResponse(res, 400, "enter valid order ");
+    if (!shopOrder) {
+      return sendResponse(res, 404, "Shop order not found");
     }
 
     if (
       shopOrder.deliveryOtp !== otp ||
       !shopOrder.otpExpires ||
-      shopOrder.otpExpires < Date.now()
+      shopOrder.otpExpires.getTime() < Date.now()
     ) {
-      return sendResponse(res, 400, "Otp is Invalid or expired");
+      return sendResponse(res, 400, "OTP is invalid or expired");
     }
 
     shopOrder.status = "delivered";
-    shopOrder.deliveredAt = Date.now();
+    shopOrder.deliveredAt = new Date();
+
+    // Clear OTP after successful verification
+    shopOrder.deliveryOtp = undefined;
+    shopOrder.otpExpires = undefined;
+
     await order.save();
 
-    await DeliveryAssignment.deleteOne({
-      shopOrderId: shopOrder._id,
-      order: order._id,
-      assignedTo: shopOrder.assignedDeliveryBoy,
-    });
+    if (shopOrder.assignedDeliveryBoy) {
+      await DeliveryAssignment.deleteOne({
+        shopOrderId: shopOrder._id,
+        order: order._id,
+        assignedTo: shopOrder.assignedDeliveryBoy,
+      });
+    }
 
-    return res.status(200).json({ message: "order delivered successfully" });
+    return sendResponse(
+      res,
+      200,
+      "Order delivered successfully"
+    );
   } catch (error) {
-    return sendResponse(res, 500, "internal server error");
+    console.error("verifyDeliveryOtp error:", error);
+
+    return sendResponse(
+      res,
+      500,
+      error.message || "Internal server error"
+    );
   }
 };
