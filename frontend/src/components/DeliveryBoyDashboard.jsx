@@ -34,7 +34,7 @@ const DeliveryBoyDashboard = () => {
         },
         (error) => {
           console.error(error);
-          toast.error('Unable to track location. Please allow location access.');
+          // toast.error('Unable to track location. Please allow location access.');
         },
         {
           enableHighAccuracy: true,
