@@ -1,39 +1,72 @@
-import nodemailer from 'nodemailer'
-import dotenv from 'dotenv'
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
-// Create a transporter using Ethereal test credentials.
-// For production, replace with your actual SMTP server details.
 const transporter = nodemailer.createTransport({
-  service: "Gmail",
-  port: 465,
-  secure: true, // Use true for port 465, false for port 587
+  service: "gmail",
   auth: {
     user: process.env.EMAIL,
     pass: process.env.APP_PASSWORD,
   },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 });
 
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("SMTP Connection Error:", error);
+  } else {
+    console.log("SMTP Server Ready");
+  }
+});
 
-export const sendOtpMail =  async (to,otp) =>{
-    await transporter.sendMail({
-    from: process.env.EMAIL,
-    to,
-    subject: "Reset your Password",
-    html: `<p>Your Otp for password reset is ${otp} .This otp is valid for 5 minutes .</p>`, // HTML version of the message
-  })
+export const sendOtpMail = async (to, otp) => {
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL,
+      to,
+      subject: "Reset Your Password",
+      html: `
+        <p>Your OTP for password reset is <strong>${otp}</strong>.</p>
+        <p>This OTP is valid for 5 minutes.</p>
+      `,
+    });
 
+    console.log("Password OTP Mail Sent:", info.messageId);
 
-}
+    return info;
+  } catch (error) {
+    console.error("sendOtpMail Error:", error);
+    throw error;
+  }
+};
 
-export const sendDeliveryOtpMail =  async (user,otp) =>{
-    await transporter.sendMail({
-    from: process.env.EMAIL,
-    to:user.email,
-    subject: "delivery otp",
-    html: `<p>Your Otp for delivery is ${otp} .This otp is valid for 5 minutes .</p>`, // HTML version of the message
-  })
+export const sendDeliveryOtpMail = async (user, otp) => {
+  try {
+    if (!user?.email) {
+      throw new Error("User email not found");
+    }
 
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL,
+      to: user.email,
+      subject: "Delivery OTP",
+      html: `
+        <p>Your delivery OTP is <strong>${otp}</strong>.</p>
+        <p>This OTP is valid for 5 minutes.</p>
+      `,
+    });
 
-}
+    console.log(
+      `Delivery OTP Mail Sent to ${user.email}:`,
+      info.messageId
+    );
+
+    return info;
+  } catch (error) {
+    console.error("sendDeliveryOtpMail Error:", error);
+    throw error;
+  }
+};
